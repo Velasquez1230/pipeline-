@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pipeline Comercial B2B</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f5f5f3;--surface:#fff;--surface2:#f9f9f7;--surface3:#fafaf8;
+  --border:#e8e8e4;--border2:#f0f0ec;--border3:#ddd;
+  --text:#1a1a18;--text2:#888;--text3:#aaa;--text4:#555;
+  --topbar:#fff;--topbar-border:#e5e5e0;
+  --modal:#fff;--modal-border:#ddd;
+  --input-bg:#fafaf8;--input-focus:#fff;
+  --metric-bg:#fff;--col-bg:#fff;--card-bg:#f9f9f7;
+  --table-bg:#fff;--table-head:#fafaf8;--table-hover:#fafaf8;
+  --ai-metric-bg:#f5f5f3;--dash-bg:#f0f2f5;--dash-card:#fff;
+  --kpi-card:#fff;--product-row:#f9f9f7;
+  --prog-bg:#e8e8e4;--tab-active:#fff;--tab-border:#ddd;
+}
+body.dark{
+  --bg:#111213;--surface:#1c1e21;--surface2:#242628;--surface3:#1e2022;
+  --border:#2e3035;--border2:#282b2f;--border3:#3a3d42;
+  --text:#e8e9ea;--text2:#8a8f98;--text3:#5c6068;--text4:#9fa4ae;
+  --topbar:#161819;--topbar-border:#252729;
+  --modal:#1c1e21;--modal-border:#2e3035;
+  --input-bg:#242628;--input-focus:#2a2d31;
+  --metric-bg:#1c1e21;--col-bg:#1c1e21;--card-bg:#242628;
+  --table-bg:#1c1e21;--table-head:#1e2022;--table-hover:#1e2022;
+  --ai-metric-bg:#242628;--dash-bg:#0e0f10;--dash-card:#1c1e21;
+  --kpi-card:#1c1e21;--product-row:#242628;
+  --prog-bg:#2e3035;--tab-active:#1c1e21;--tab-border:#2e3035;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;transition:background .2s,color .2s}
+button{cursor:pointer;font-family:inherit;font-size:13px}
+input,select,textarea{font-family:inherit;font-size:13px;outline:none}
+.topbar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--topbar);border-bottom:1px solid var(--topbar-border);flex-wrap:wrap;transition:background .2s,border-color .2s}
+.logo{font-weight:700;font-size:15px;color:var(--text);white-space:nowrap;letter-spacing:-.3px}
+.search{padding:7px 12px;border-radius:8px;border:1px solid var(--border3);background:var(--input-bg);width:190px;color:var(--text)}
+.search:focus{border-color:#7F77DD;background:var(--input-focus)}
+.sel-filter{padding:7px 10px;border-radius:8px;border:1px solid var(--border3);background:var(--input-bg);color:var(--text)}
+.btn{padding:7px 13px;border-radius:8px;border:1px solid var(--border3);background:var(--surface);color:var(--text);white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn-primary{padding:7px 13px;border-radius:8px;border:none;background:#7F77DD;color:#fff;font-weight:600}
+.btn-primary:hover{background:#6c64c9}
+.btn-green{background:#EAF3DE;color:#3B6D11;border-color:#97C459}
+.btn-green:hover{background:#d5ebc0}
+.btn-amber{background:#FAEEDA;color:#854F0B;border-color:#EF9F27}
+body.dark .btn-green{background:#1e2d13;color:#7dbf3a;border-color:#3b5a1a}
+body.dark .btn-amber{background:#2d2010;color:#d4893a;border-color:#6b4210}
+/* Dark mode toggle */
+.theme-toggle{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;border:1px solid var(--border3);background:var(--surface);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.theme-toggle:hover{background:var(--surface2)}
+.toggle-track{width:32px;height:18px;border-radius:9px;background:#ddd;position:relative;transition:background .2s;flex-shrink:0}
+body.dark .toggle-track{background:#7F77DD}
+.toggle-thumb{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+body.dark .toggle-thumb{transform:translateX(14px)}
+.zoho-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:4px;vertical-align:middle}
+.save-indicator{font-size:11px;color:#639922;padding:4px 10px;border-radius:6px;background:#EAF3DE;display:none}
+.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px 16px}
+.metric{background:var(--metric-bg);border-radius:8px;padding:11px 13px;border:1px solid var(--border)}
+.metric-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.metric-val{font-size:17px;font-weight:700}
+.metric-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.alerts-strip{margin:0 16px 10px;padding:8px 12px;border-radius:8px;background:#FAECE7;border:1px solid #F0997B;font-size:13px;color:#993C1D}
+body.dark .alerts-strip{background:#2d1a14;border-color:#6b3320;color:#e8815a}
+.tab-bar{display:flex;gap:4px;padding:0 16px 12px}
+.tab{padding:6px 14px;border-radius:20px;border:1px solid transparent;font-size:13px;background:transparent;color:var(--text2)}
+.tab.active{background:var(--tab-active);border-color:var(--tab-border);color:var(--text);font-weight:600}
+.kanban{display:flex;gap:10px;padding:0 16px 20px;overflow-x:auto;align-items:flex-start}
+.col{min-width:198px;flex:0 0 198px;background:var(--col-bg);border-radius:10px;padding:10px;border:1px solid var(--border)}
+.col-head{font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;padding-bottom:7px;border-bottom:1px solid var(--border2)}
+.col-sub{font-size:11px;color:var(--text3);font-weight:400}
+.card{background:var(--card-bg);border-radius:8px;padding:10px;margin-bottom:7px;border:1px solid var(--border);border-left:3px solid #ccc;cursor:pointer;transition:box-shadow .15s}
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.card-client{font-weight:700;font-size:13px;margin-bottom:1px}
+.card-sub{font-size:11px;color:var(--text2);margin-bottom:5px}
+.card-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.card-margin{margin-top:5px;padding:3px 8px;border-radius:6px;background:#EAF3DE;display:flex;justify-content:space-between}
+body.dark .card-margin{background:#1e2d13}
+.card-meta{display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--text3)}
+.prog-wrap{width:100%;height:3px;border-radius:2px;background:var(--prog-bg);margin-top:5px}
+.prog-bar{height:3px;border-radius:2px}
+.list-wrap{padding:0 16px 20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--table-bg);border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+th{padding:9px 11px;text-align:left;font-size:12px;font-weight:600;color:var(--text2);background:var(--table-head);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 11px;border-bottom:1px solid var(--border2);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--table-hover)}
+.btn-del{padding:3px 9px;border-radius:6px;border:1px solid #F0997B;background:#FAECE7;color:#993C1D;font-size:11px}
+body.dark .btn-del{background:#2d1a14;border-color:#6b3320;color:#e8815a}
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:var(--modal);border-radius:14px;padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;border:1px solid var(--modal-border)}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:13px;border-bottom:1px solid var(--border2)}
+.modal-title{font-size:16px;font-weight:700}
+.modal-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:12px;font-weight:600;color:var(--text4)}
+.form-input{padding:8px 11px;border-radius:8px;border:1px solid var(--border3);background:var(--input-bg);color:var(--text);width:100%}
+.form-input:focus{border-color:#7F77DD;background:var(--input-focus)}
+.form-select{padding:8px 11px;border-radius:8px;border:1px solid var(--border3);background:var(--input-bg);color:var(--text);width:100%;height:36px}
+.form-select:focus{border-color:#7F77DD;background:var(--input-focus)}
+.form-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:13px;border-top:1px solid var(--border2);margin-top:4px}
+.ai-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ai-metric{background:var(--ai-metric-bg);border-radius:8px;padding:8px 10px}
+.ai-metric-label{font-size:11px;color:var(--text2)}
+.ai-metric-val{font-size:13px;font-weight:700;margin-top:1px}
+.rec-box{padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px}
+.rec-blue{background:#E6F1FB;color:#185FA5}
+.rec-red{background:#FAECE7;color:#993C1D}
+body.dark .rec-blue{background:#0e1e35;color:#5a9fd4}
+body.dark .rec-red{background:#2d1a14;color:#e8815a}
+.ai-text{font-size:13px;line-height:1.75;white-space:pre-wrap;color:var(--text)}
+.ai-loading{text-align:center;color:var(--text3);padding:18px 0;font-size:13px}
+.edit-section{margin-top:13px;padding-top:12px;border-top:1px solid var(--border2)}
+.edit-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px}
+.margin-highlight{background:#f0f7e8;border:1px solid #97C459;border-radius:8px;padding:10px 13px;margin-bottom:11px}
+body.dark .margin-highlight{background:#1a2b10;border-color:#3a5c1a}
+.margin-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.margin-big{font-size:19px;font-weight:700;color:#3B6D11}
+body.dark .margin-big{color:#7dbf3a}
+.margin-label{font-size:11px;color:#639922;margin-bottom:2px}
+.products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-height:50vh;overflow-y:auto}
+.product-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--product-row);border:1px solid var(--border)}
+.product-name{flex:1;font-size:13px}
+.product-input{width:65px;padding:5px 8px;border-radius:6px;border:1px solid var(--border3);background:var(--surface);color:var(--text);text-align:center}
+.hidden{display:none}
+/* Dashboard */
+.dash-wrap{background:var(--dash-bg);width:100%;min-height:100vh;padding:20px}
+.dash-overlay{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;z-index:200;display:none}
+.dash-overlay.open{display:block}
+.dash-card{background:var(--dash-card);border-radius:12px;padding:16px;border:1px solid var(--border)}
+.dash-card-title{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.kpi-card{background:var(--kpi-card);border-radius:10px;padding:12px 14px;border:1px solid var(--border);border-top:3px solid #ccc}
+.kpi-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.kpi-val{font-size:18px;font-weight:700}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+/* Tasks Panel */
+.tasks-panel{margin:0 16px 16px;background:var(--surface);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.tasks-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border2);flex-wrap:wrap;gap:8px}
+.tasks-title{font-size:14px;font-weight:700;color:var(--text)}
+.tasks-filters{display:flex;gap:6px;flex-wrap:wrap}
+.tasks-filter-btn{padding:4px 10px;border-radius:14px;border:1px solid var(--border3);background:transparent;color:var(--text2);font-size:11px;cursor:pointer}
+.tasks-filter-btn.active{background:#7F77DD;color:#fff;border-color:#7F77DD}
+.task-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border2);transition:background .15s}
+.task-row:last-child{border-bottom:none}
+.task-row:hover{background:var(--surface2)}
+.task-row.done{opacity:.55}
+.task-checkbox{width:18px;height:18px;border-radius:5px;border:2px solid var(--border3);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.task-checkbox.checked{background:#639922;border-color:#639922}
+.task-checkbox.checked::after{content:"✓";color:#fff;font-size:11px;font-weight:700}
+.task-client{font-size:12px;font-weight:700;color:#7F77DD;white-space:nowrap}
+.task-action{flex:1;font-size:13px;color:var(--text)}
+.task-row.done .task-action{text-decoration:line-through;color:var(--text3)}
+.task-stage-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap}
+.task-days{font-size:11px;color:var(--text3);white-space:nowrap}
+.tasks-empty{padding:20px;text-align:center;color:var(--text3);font-size:13px}
+.tasks-panel-toggle{cursor:pointer;font-size:12px;color:#7F77DD;font-weight:600}
+.prio-alta{background:#FAECE7;color:#993C1D;border:1px solid #F0997B}
+.prio-media{background:#FAEEDA;color:#854F0B;border:1px solid #EF9F27}
+.prio-baja{background:#EAF3DE;color:#3B6D11;border:1px solid #97C459}
+body.dark .prio-alta{background:#2d1a14;color:#e8815a;border-color:#6b3320}
+body.dark .prio-media{background:#2d2010;color:#d4893a;border-color:#6b4210}
+body.dark .prio-baja{background:#1e2d13;color:#7dbf3a;border-color:#3b5a1a}
+.task-overdue{background:#FAECE722;border-left:3px solid #D85A30 !important}
+.task-due-soon{background:#FAEEDA44;border-left:3px solid #EF9F27 !important}
+body.dark .task-overdue{background:#2d1a1433}
+body.dark .task-due-soon{background:#2d201033}
+.btn-add-task{padding:2px 8px;border-radius:6px;border:1px dashed #7F77DD;background:transparent;color:#7F77DD;font-size:11px;cursor:pointer;white-space:nowrap}
+.btn-add-task:hover{background:#7F77DD15}
+.task-modal{background:var(--modal);border-radius:14px;padding:22px;width:100%;max-width:480px;border:1px solid var(--modal-border)}
+.due-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">CRM Pipeline B2B</span>
+  <input class="search" id="searchInput" placeholder="Buscar..." oninput="render()"/>
+  <select class="sel-filter" id="stageFilter" onchange="render()">
+    <option value="Todas">Todas las etapas</option>
+    <option>Prospección</option><option>Contacto</option><option>Presentación</option>
+    <option>Propuesta</option><option>Negociación</option><option>Cierre</option>
+  </select>
+  <div style="flex:1"></div>
+  <div id="syncStatus" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 12px;border-radius:20px;background:#EAF3DE;color:#3B6D11;font-weight:600;transition:all .3s">
+    <div id="syncDot" style="width:7px;height:7px;border-radius:50%;background:#639922"></div>
+    <span id="syncText">Conectado a la nube ☁</span>
+  </div>
+  <span class="save-indicator" id="saveIndicator" style="display:none">✓ Guardado</span>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn">
+    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    <span id="themeLabel">Modo oscuro</span>
+  </button>
+  <button class="btn" onclick="toggleView()">Vista Lista</button>
+  <button class="btn btn-amber" onclick="openMarginsModal()">Márgenes por producto</button>
+  <button class="btn" onclick="document.getElementById('fileInput').click()">⬆ Importar Excel</button>
+  <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden" onchange="importExcel(event)"/>
+  <button class="btn" onclick="exportExcel()">⬇ Exportar Excel</button>
+  <button class="btn" onclick="exportWord()">⬇ Exportar Word</button>
+  <button class="btn" id="zohoBtn" onclick="document.getElementById('zohoOverlay').classList.remove('hidden')">
+    Zoho CRM <span class="zoho-dot" id="zohoDot" style="background:#D85A30"></span>
+  </button>
+  <button class="btn-primary" onclick="openAdd()">+ Oportunidad</button>
+  <button class="btn btn-green" onclick="openDashboard()">Dashboard Ejecutivo ↗</button>
+</div>
+
+<div class="metrics" id="metricsBar"></div>
+<div id="alertsStrip"></div>
+
+<!-- TASKS PANEL -->
+<div class="tasks-panel" id="tasksPanel">
+  <div class="tasks-header">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="tasks-title">📋 Próximas Acciones Pendientes</span>
+      <span id="tasksBadge" style="background:#7F77DD;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700"></span>
+      <select id="taskDealFilter" onchange="renderTasks()" style="padding:3px 8px;border-radius:8px;border:1px solid var(--border3);background:var(--input-bg);color:var(--text);font-size:11px">
+        <option value="">Todas las oportunidades</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div class="tasks-filters">
+        <button class="tasks-filter-btn active" onclick="setTaskFilter('all',this)">Todas</button>
+        <button class="tasks-filter-btn" onclick="setTaskFilter('pending',this)">Pendientes</button>
+        <button class="tasks-filter-btn" onclick="setTaskFilter('done',this)">Completadas</button>
+        <button class="tasks-filter-btn" onclick="setTaskFilter('urgent',this)">Urgentes</button>
+        <button class="tasks-filter-btn" onclick="setTaskFilter('overdue',this)">Vencidas</button>
+      </div>
+      <button class="btn-primary" style="font-size:11px;padding:4px 11px" onclick="openAddTask()">+ Nueva tarea</button>
+      <button class="tasks-panel-toggle" onclick="toggleTasksPanel()">▾ Colapsar</button>
+    </div>
+  </div>
+  <div id="tasksBody"></div>
+</div>
+
+<!-- TASK ADD/EDIT MODAL -->
+<div class="overlay hidden" id="taskOverlay">
+  <div class="task-modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="taskModalTitle">Nueva Tarea</div><div class="modal-sub" id="taskModalSub">Asociada a una oportunidad</div></div>
+      <button class="btn" style="padding:4px 10px" onclick="closeTaskModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field" style="grid-column:1/-1">
+        <label class="form-label">Oportunidad *</label>
+        <select class="form-select" id="task_deal"></select>
+      </div>
+    </div>
+    <div class="form-field" style="margin-bottom:11px">
+      <label class="form-label">Descripción de la tarea *</label>
+      <input class="form-input" id="task_desc" placeholder="Ej: Enviar propuesta técnica revisada"/>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="form-label">Prioridad</label>
+        <select class="form-select" id="task_prio">
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media" selected>🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Fecha límite</label>
+        <input class="form-input" id="task_due" type="date"/>
+      </div>
+    </div>
+    <div class="form-field" style="margin-bottom:11px">
+      <label class="form-label">Notas adicionales</label>
+      <input class="form-input" id="task_notes" placeholder="Contexto o detalles adicionales..."/>
+    </div>
+    <div class="form-footer">
+      <button class="btn" onclick="closeTaskModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveTask()">Guardar tarea</button>
+    </div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" id="tabKanban" onclick="setView('kanban')">Kanban</button>
+  <button class="tab" id="tabList" onclick="setView('list')">Lista</button>
+</div>
+<div class="kanban" id="kanbanView"></div>
+<div class="list-wrap hidden" id="listView"></div>
+
+<!-- ADD MODAL -->
+<div class="overlay hidden" id="addOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">Nueva oportunidad</div><div class="modal-sub">Completa los datos del prospecto</div></div>
+      <button class="btn" style="padding:4px 10px" onclick="closeAdd()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">Cliente *</label><input class="form-input" id="f_client" placeholder="Empresa"/></div>
+      <div class="form-field"><label class="form-label">Contacto</label><input class="form-input" id="f_contact" placeholder="Nombre del contacto"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">Etapa</label>
+        <select class="form-select" id="f_stage"><option>Prospección</option><option>Contacto</option><option>Presentación</option><option>Propuesta</option><option>Negociación</option><option>Cierre</option></select>
+      </div>
+      <div class="form-field"><label class="form-label">Valor estimado ($)</label><input class="form-input" id="f_value" type="number" placeholder="0" oninput="updateAddPreview()"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">Industria</label>
+        <select class="form-select" id="f_industry"><option>Financiero</option><option>Retail</option><option>Gobierno</option><option>Educación</option><option>Tecnología</option><option>Manufactura</option><option>Construcción</option><option>Bienes Raíces</option></select>
+      </div>
+      <div class="form-field"><label class="form-label">Tamaño</label>
+        <select class="form-select" id="f_size"><option>Pequeña</option><option selected>Mediana</option><option>Grande</option></select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">Producto / Solución</label>
+        <select class="form-select" id="f_product" onchange="autoFillMargin()"><option>Redes</option><option>Ciberseguridad</option><option>NDR</option><option>MDR</option><option>EPDR</option><option>XDR</option><option>Firewall</option><option>EDR</option><option>Libraesva</option><option>Patch Management</option><option>Diagnóstico de seguridad</option><option>Educativo</option><option>Cloud</option><option>Office 365</option></select>
+      </div>
+      <div class="form-field"><label class="form-label">Probabilidad %</label><input class="form-input" id="f_prob" type="number" min="0" max="100" placeholder="30"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">Margen de utilidad %</label><input class="form-input" id="f_margin" type="number" min="0" max="100" style="border-color:#97C459" oninput="updateAddPreview()"/></div>
+      <div class="form-field"><label class="form-label">Utilidad estimada</label><div id="f_util_preview" style="padding:8px 11px;border-radius:8px;background:#EAF3DE;color:#3B6D11;font-weight:700;font-size:14px">$0</div></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">Último contacto</label><input class="form-input" id="f_lastContact" type="date"/></div>
+      <div class="form-field"><label class="form-label">Próxima acción</label><input class="form-input" id="f_nextAction" placeholder="Ej: Agendar reunión"/></div>
+    </div>
+    <div class="form-footer">
+      <button class="btn" onclick="closeAdd()">Cancelar</button>
+      <button class="btn-primary" onclick="saveDeal()">Guardar oportunidad</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI / EDIT MODAL -->
+<div class="overlay hidden" id="aiOverlay">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="aiTitle">Análisis</div><div class="modal-sub" id="aiSubtitle"></div></div>
+      <button class="btn" style="padding:4px 10px" onclick="closeAI()">✕</button>
+    </div>
+    <div class="ai-grid" id="aiMetrics"></div>
+    <div class="margin-highlight" id="marginHighlight"></div>
+    <div id="aiBaseRec"></div>
+    <div style="font-size:12px;font-weight:600;color:#888;margin:12px 0 7px">ASISTENTE IA</div>
+    <div id="aiContent"><div class="ai-loading">Analizando oportunidad...</div></div>
+    <div class="edit-section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+        <div class="edit-title" style="margin-bottom:0">EDITAR OPORTUNIDAD</div>
+        <button class="btn-primary" style="font-size:12px;padding:5px 11px" onclick="saveFullEdit()">Guardar cambios</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">Cliente</label><input class="form-input" id="edit_client"/></div>
+        <div class="form-field"><label class="form-label">Contacto</label><input class="form-input" id="edit_contact"/></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">Etapa</label>
+          <select class="form-select" id="edit_stage"><option>Prospección</option><option>Contacto</option><option>Presentación</option><option>Propuesta</option><option>Negociación</option><option>Cierre</option></select>
+        </div>
+        <div class="form-field"><label class="form-label">Valor ($)</label><input class="form-input" id="edit_value" type="number" oninput="updateEditPreview()"/></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">Industria</label>
+          <select class="form-select" id="edit_industry"><option>Financiero</option><option>Retail</option><option>Gobierno</option><option>Educación</option><option>Tecnología</option><option>Manufactura</option><option>Construcción</option><option>Bienes Raíces</option></select>
+        </div>
+        <div class="form-field"><label class="form-label">Tamaño</label>
+          <select class="form-select" id="edit_size"><option>Pequeña</option><option>Mediana</option><option>Grande</option></select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">Producto / Solución</label>
+          <select class="form-select" id="edit_product" onchange="autoFillEditMargin()"><option>Redes</option><option>Ciberseguridad</option><option>NDR</option><option>MDR</option><option>EPDR</option><option>XDR</option><option>Firewall</option><option>EDR</option><option>Libraesva</option><option>Patch Management</option><option>Diagnóstico de seguridad</option><option>Educativo</option><option>Cloud</option><option>Office 365</option></select>
+        </div>
+        <div class="form-field"><label class="form-label">Probabilidad %</label><input class="form-input" id="edit_prob" type="number" min="0" max="100"/></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">Margen %</label><input class="form-input" id="edit_margin" type="number" min="0" max="100" style="border-color:#97C459" oninput="updateEditPreview()"/></div>
+        <div class="form-field"><label class="form-label">Utilidad estimada</label><div id="edit_util_preview" style="padding:8px 11px;border-radius:8px;background:#EAF3DE;color:#3B6D11;font-weight:700;font-size:14px">$0</div></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label class="form-label">Último contacto</label><input class="form-input" id="edit_lastContact" type="date"/></div>
+        <div class="form-field"><label class="form-label">Próxima acción</label><input class="form-input" id="edit_next"/></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MARGINS MODAL -->
+<div class="overlay hidden" id="marginsOverlay">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div><div class="modal-title">Márgenes por producto</div><div class="modal-sub">Margen base por solución — editable en cada oportunidad</div></div>
+      <button class="btn" style="padding:4px 10px" onclick="document.getElementById('marginsOverlay').classList.add('hidden')">✕</button>
+    </div>
+    <div class="products-grid" id="productsGrid"></div>
+    <div class="form-footer">
+      <button class="btn" onclick="document.getElementById('marginsOverlay').classList.add('hidden')">Cerrar</button>
+      <button class="btn-primary" onclick="saveMargins()">Guardar márgenes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ZOHO MODAL -->
+<div class="overlay hidden" id="zohoOverlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">Conexión Zoho CRM</div>
+      <button class="btn" style="padding:4px 10px" onclick="document.getElementById('zohoOverlay').classList.add('hidden')">✕</button>
+    </div>
+    <div style="font-size:13px;color:#888;margin-bottom:14px">Ingresa tu token OAuth de Zoho para sincronizar oportunidades.</div>
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:#f5f5f3;margin-bottom:12px;font-size:13px">
+      <span class="zoho-dot" id="zohoModalDot" style="background:#D85A30"></span>
+      <span id="zohoStatusText">Desconectado</span>
+    </div>
+    <div class="form-field" style="margin-bottom:14px">
+      <label class="form-label">Access Token</label>
+      <input class="form-input" id="zohoToken" type="password" placeholder="1000.xxxxxxxxxxxx..."/>
+    </div>
+    <div class="form-footer">
+      <button class="btn" onclick="document.getElementById('zohoOverlay').classList.add('hidden')">Cerrar</button>
+      <button class="btn-primary" onclick="connectZoho()">Conectar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD EJECUTIVO (FULL SCREEN) -->
+<div class="dash-overlay" id="dashOverlay">
+  <div class="dash-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:21px;font-weight:700;color:#1a1a18">Dashboard Ejecutivo — Pipeline B2B</div>
+        <div style="font-size:12px;color:#888;margin-top:3px" id="reportDate"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-green" onclick="generateAIReport()">Análisis IA ↗</button>
+        <button class="btn btn-amber" onclick="downloadReport()">Exportar .txt</button>
+        <button class="btn" onclick="closeDashboard()">✕ Cerrar</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px" id="dash_kpis"></div>
+
+    <!-- AI BANNER -->
+    <div id="dash_ai_banner" style="display:none;background:#fff;border-radius:12px;padding:16px;border:1px solid #e8e8e4;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;color:#333">Análisis Ejecutivo IA — Recomendaciones para Junta Directiva</div>
+        <button class="btn-primary" style="font-size:11px;padding:4px 10px" onclick="generateAIReport()">Regenerar ↗</button>
+      </div>
+      <div id="dash_ai_text" style="font-size:13px;line-height:1.8;color:#333;white-space:pre-wrap;max-height:280px;overflow-y:auto"></div>
+    </div>
+
+    <!-- ROW 1 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="dash-card"><div class="dash-card-title">Pipeline por Monto y Etapa</div><div style="position:relative;height:190px"><canvas id="ch_stages" role="img" aria-label="Pipeline por etapa"></canvas></div></div>
+      <div class="dash-card"><div class="dash-card-title">Utilidad Bruta por Etapa</div><div style="position:relative;height:190px"><canvas id="ch_utility" role="img" aria-label="Utilidad por etapa"></canvas></div></div>
+      <div class="dash-card"><div class="dash-card-title">Distribución por Industria</div><div style="position:relative;height:190px"><canvas id="ch_industry" role="img" aria-label="Por industria"></canvas></div></div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="dash-card">
+        <div class="dash-card-title">Comparativo Financiero del Pipeline</div>
+        <div id="dash_bars"></div>
+        <div style="margin-top:12px;font-size:11px;color:#888">
+          <div style="font-weight:600;margin-bottom:4px">Tasa de conversión estimada</div>
+          <div id="dash_conversion"></div>
+        </div>
+      </div>
+      <div class="dash-card"><div class="dash-card-title">Score vs Probabilidad (tamaño = valor)</div><div style="position:relative;height:200px"><canvas id="ch_scatter" role="img" aria-label="Score vs probabilidad"></canvas></div></div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="dash-card"><div class="dash-card-title">Pipeline por Producto / Solución</div><div style="position:relative;height:210px"><canvas id="ch_products" role="img" aria-label="Por producto"></canvas></div></div>
+      <div class="dash-card"><div class="dash-card-title">Margen % por Oportunidad (top 10)</div><div style="position:relative;height:210px"><canvas id="ch_margins" role="img" aria-label="Márgenes"></canvas></div></div>
+    </div>
+
+    <!-- TABLE + ALERTS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="dash-card">
+        <div class="dash-card-title">Top Oportunidades — Detalle</div>
+        <div id="dash_table" style="overflow-x:auto"></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Panel de Alertas y Seguimiento</div>
+        <div id="dash_alerts"></div>
+      </div>
+    </div>
+
+    <!-- RECOMMENDATIONS BOARD -->
+    <div class="dash-card" style="margin-bottom:12px">
+      <div class="dash-card-title">Recomendaciones Estratégicas para Junta Directiva</div>
+      <div id="dash_recommendations" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+    </div>
+
+    <!-- STAGE FUNNEL -->
+    <div class="dash-card">
+      <div class="dash-card-title">Embudo de Conversión — Análisis por Etapa</div>
+      <div id="dash_funnel"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STAGES=["Prospección","Contacto","Presentación","Propuesta","Negociación","Cierre"];
+const STAGE_COLORS={Prospección:"#7F77DD",Contacto:"#378ADD",Presentación:"#1D9E75",Propuesta:"#EF9F27",Negociación:"#D85A30",Cierre:"#639922"};
+const RISK_COLOR={Bajo:"#639922",Medio:"#BA7517",Alto:"#D85A30"};
+const RISK_BG={Bajo:"#EAF3DE",Medio:"#FAEEDA",Alto:"#FAECE7"};
+const STAGE_ACTIONS={Prospección:"Investigar cliente / primer contacto",Contacto:"Agendar reunión",Presentación:"Enviar demo",Propuesta:"Enviar cotización",Negociación:"Ajustar oferta",Cierre:"Confirmar contrato"};
+const PRODUCTS=["Redes","Ciberseguridad","NDR","MDR","EPDR","XDR","Firewall","EDR","Libraesva","Patch Management","Diagnóstico de seguridad","Educativo","Cloud","Office 365"];
+
+// ── PERSISTENCIA GOOGLE SHEETS ───────────────────────────────
+const GS_URL="https://script.google.com/macros/s/AKfycbz_DKd1fntgVbtI8Yn7QhqHlR_OxQNZSEL-7F3yLN81s9ZlTqEbnculTGAxYpr256nH2A/exec";
+const STORAGE_KEY="crm_pipeline_v2";
+const MARGINS_KEY="crm_margins_v2";
+let saveTimeout=null;
+let isSyncing=false;
+
+function setSyncStatus(status){
+  const dot=document.getElementById("syncDot");
+  const txt=document.getElementById("syncText");
+  const box=document.getElementById("syncStatus");
+  if(!dot||!txt||!box) return;
+  const cfg={
+    syncing:{bg:"#E6F1FB",color:"#185FA5",dot:"#378ADD",text:"Sincronizando... ☁"},
+    ok:     {bg:"#EAF3DE",color:"#3B6D11",dot:"#639922",text:"Sincronizado ✓ ☁"},
+    error:  {bg:"#FAECE7",color:"#993C1D",dot:"#D85A30",text:"Error de sincronización ⚠"},
+    offline:{bg:"#f5f5f3",color:"#888",   dot:"#aaa",   text:"Modo local (sin conexión)"},
+  };
+  const c=cfg[status]||cfg.ok;
+  box.style.background=c.bg; box.style.color=c.color;
+  dot.style.background=c.dot; txt.textContent=c.text;
+}
+
+async function saveToSheets(payload){
+  try{
+    setSyncStatus("syncing");
+    const resp=await fetch(GS_URL,{method:"POST",body:JSON.stringify(payload),headers:{"Content-Type":"text/plain"}});
+    const text=await resp.text();
+    if(text==="OK"||text.includes("OK")){setSyncStatus("ok");}
+    else{setSyncStatus("error");console.warn("Sheets response:",text);}
+  }catch(e){
+    setSyncStatus("error");
+    console.warn("Sheets save failed, using localStorage fallback:",e);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
+  }
+}
+
+async function loadFromSheets(){
+  try{
+    setSyncStatus("syncing");
+    const resp=await fetch(GS_URL+"?t="+Date.now());
+    const text=await resp.text();
+    if(!text||text==="[]"||text==="null"){setSyncStatus("ok");return null;}
+    const data=JSON.parse(text);
+    setSyncStatus("ok");
+    return data;
+  }catch(e){
+    console.warn("Sheets load failed, using localStorage fallback:",e);
+    setSyncStatus("offline");
+    const raw=localStorage.getItem(STORAGE_KEY);
+    return raw?JSON.parse(raw):null;
+  }
+}
+
+function saveAll(){
+  // Always save to localStorage as backup
+  const payload={deals,nextId,productMargins,savedAt:new Date().toISOString()};
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
+  localStorage.setItem(MARGINS_KEY,JSON.stringify(productMargins));
+  // Debounce cloud save 1.2s to avoid too many requests
+  clearTimeout(saveTimeout);
+  saveTimeout=setTimeout(()=>saveToSheets(payload),1200);
+}
+
+async function loadAll(){
+  // First load from localStorage immediately for fast render
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const p=JSON.parse(raw);
+      if(p.deals){deals=p.deals;nextId=p.nextId||nextId;}
+      if(p.productMargins) productMargins={...productMargins,...p.productMargins};
+    }
+    const mr=localStorage.getItem(MARGINS_KEY);
+    if(mr) productMargins={...productMargins,...JSON.parse(mr)};
+  }catch(e){}
+  // Then try to load fresh data from Google Sheets
+  const cloud=await loadFromSheets();
+  if(cloud&&cloud.deals){
+    // Use cloud data if it's newer
+    const localSaved=localStorage.getItem("crm_savedAt")||"";
+    const cloudSaved=cloud.savedAt||"";
+    if(!localSaved||cloudSaved>localSaved){
+      deals=cloud.deals;
+      nextId=cloud.nextId||nextId;
+      if(cloud.productMargins) productMargins={...productMargins,...cloud.productMargins};
+      localStorage.setItem("crm_savedAt",cloudSaved);
+    }
+  }
+  render();
+}
+
+// ── DATOS INICIALES ───────────────────────────────────────────
+let productMargins={Redes:28,Ciberseguridad:35,NDR:40,MDR:42,EPDR:38,XDR:40,Firewall:30,EDR:36,Libraesva:32,"Patch Management":25,"Diagnóstico de seguridad":45,Educativo:50,Cloud:30,"Office 365":20};
+
+function daysAgo(n){const d=new Date(Date.now()-n*86400000);return d.toISOString().split("T")[0];}
+
+let deals=[
+  {id:1,client:"Banco Central",contact:"Luis Morales",stage:"Propuesta",value:45000,industry:"Financiero",size:"Grande",product:"XDR",lastContact:daysAgo(8),nextAction:"Enviar propuesta técnica",prob:65,margin:null},
+  {id:2,client:"RetailMax",contact:"Ana García",stage:"Contacto",value:12000,industry:"Retail",size:"Mediana",product:"Firewall",lastContact:daysAgo(3),nextAction:"Agendar demo",prob:30,margin:null},
+  {id:3,client:"MuniCapital",contact:"Pedro Ramos",stage:"Negociación",value:78000,industry:"Gobierno",size:"Grande",product:"MDR",lastContact:daysAgo(12),nextAction:"Ajustar propuesta",prob:75,margin:null},
+  {id:4,client:"EduTech GT",contact:"Sofia Chen",stage:"Presentación",value:8500,industry:"Educación",size:"Pequeña",product:"Cloud",lastContact:daysAgo(1),nextAction:"Enviar demo",prob:45,margin:null},
+  {id:5,client:"ConstructoraSA",contact:"Mario Paz",stage:"Prospección",value:25000,industry:"Construcción",size:"Mediana",product:"Ciberseguridad",lastContact:daysAgo(5),nextAction:"Primer contacto",prob:15,margin:null},
+];
+let nextId=100,currentView="kanban",selectedId=null,reportCache="";
+
+// Cargar datos guardados (async - carga local primero, luego nube)
+// loadAll() llamado desde Init al final
+
+// ── UTILIDADES ────────────────────────────────────────────────
+function daysSince(ds){return Math.floor((Date.now()-new Date(ds).getTime())/86400000);}
+function getMargin(d){return d.margin!=null?d.margin:(productMargins[d.product]||30);}
+function getUtility(d){return Math.round(d.value*(getMargin(d)/100));}
+function calcScore(d){
+  const days=daysSince(d.lastContact);
+  return Math.min(100,Math.round(Math.max(0,30-days*2)+(STAGES.indexOf(d.stage)/5)*25+Math.min(20,d.value/5000)+d.prob*0.25));
+}
+function getRisk(d){
+  const days=daysSince(d.lastContact);
+  if(days>=7||(d.value>=50000&&days>=5)||(d.stage==="Negociación"&&days>=4)) return "Alto";
+  if(days>=4||(d.prob>=60&&days>=3)||(d.value>=30000&&days>=4)) return "Medio";
+  return "Bajo";
+}
+// Prioridad de tarea basada en múltiples factores
+function calcTaskPriority(d, task){
+  if(task && task.priority) return task.priority;
+  const days=daysSince(d.lastContact);
+  const risk=getRisk(d);
+  if(risk==="Alto"||d.value>=50000||(d.prob>=70&&d.stage==="Negociación")) return "Alta";
+  if(risk==="Medio"||d.value>=20000||d.prob>=50) return "Media";
+  return "Baja";
+}
+function isTaskOverdue(task){
+  if(!task.dueDate) return false;
+  return new Date(task.dueDate) < new Date(new Date().toDateString());
+}
+function isTaskDueSoon(task){
+  if(!task.dueDate||isTaskOverdue(task)) return false;
+  const diff=(new Date(task.dueDate)-new Date())/86400000;
+  return diff<=3;
+}
+function daysUntilDue(task){
+  if(!task.dueDate) return null;
+  return Math.ceil((new Date(task.dueDate)-new Date())/86400000);
+}
+function getRec(d){
+  const days=daysSince(d.lastContact);
+  let suggested="Llamar";
+  if(d.stage==="Propuesta"||d.stage==="Presentación") suggested="Enviar propuesta";
+  if(d.stage==="Contacto") suggested="Agendar reunión";
+  if(d.value>=50000) suggested="Escalar con fabricante";
+  let alerts=[];
+  if(days>=7) alerts.push("Sin actividad por más de 7 días");
+  if(d.prob>=70&&days>=4) alerts.push("Alta probabilidad sin avance reciente");
+  if(d.value>=40000&&days>=5) alerts.push("Oportunidad de alto valor estancada");
+  return{action:STAGE_ACTIONS[d.stage],suggested,alerts,risk:getRisk(d)};
+}
+function fmtFull(n){return"$"+Math.round(n).toLocaleString();}
+function fmt(n){return n>=1000?(n/1000).toFixed(0)+"k":n;}
+
+// ── FILTRADO ──────────────────────────────────────────────────
+function filtered(){
+  const q=document.getElementById("searchInput").value.toLowerCase();
+  const sf=document.getElementById("stageFilter").value;
+  return deals.filter(d=>{
+    const ms=!q||d.client.toLowerCase().includes(q)||d.contact.toLowerCase().includes(q)||d.product.toLowerCase().includes(q);
+    return ms&&(sf==="Todas"||d.stage===sf);
+  });
+}
+
+// ── RENDER PRINCIPAL ──────────────────────────────────────────
+function render(){renderMetrics();renderAlerts();currentView==="kanban"?renderKanban():renderList();}
+
+function renderMetrics(){
+  const total=deals.reduce((a,x)=>a+x.value,0);
+  const totalUtil=deals.reduce((a,x)=>a+getUtility(x),0);
+  const avgMargin=deals.length?Math.round(deals.reduce((a,x)=>a+getMargin(x),0)/deals.length):0;
+  const avgScore=deals.length?Math.round(deals.reduce((a,x)=>a+calcScore(x),0)/deals.length):0;
+  const crits=deals.filter(x=>getRisk(x)==="Alto").length;
+  const pond=Math.round(deals.reduce((a,x)=>a+getUtility(x)*(x.prob/100),0));
+  document.getElementById("metricsBar").innerHTML=[
+    ["Pipeline Total",fmtFull(total),"",""],
+    ["Utilidad Total",fmtFull(totalUtil),"color:#3B6D11;border-color:#97C459","Margen prom. "+avgMargin+"%"],
+    ["Oportunidades",deals.length,"",""],
+    ["Score Promedio",avgScore+"/100","",""],
+    ["Alertas Críticas",crits,crits>0?"color:#D85A30;border-color:#D85A30":"",""],
+    ["Util. Ponderada",fmtFull(pond),"color:#854F0B;border-color:#EF9F27","Por probabilidad"],
+  ].map(([l,v,s,sub])=>`<div class="metric" style="${s}"><div class="metric-label">${l}</div><div class="metric-val" style="${s}">${v}</div>${sub?`<div class="metric-sub">${sub}</div>`:""}</div>`).join("");
+}
+
+function renderAlerts(){
+  const a=deals.filter(x=>getRisk(x)==="Alto");
+  const allT=getAllTasks();
+  const overdueTasks=allT.filter(t=>!t.done&&isTaskOverdue(t));
+  let strips=[];
+  if(a.length) strips.push(`<div class="alerts-strip" style="margin-bottom:${overdueTasks.length?'6px':'0'}">⚠ Riesgo alto: ${a.map(x=>x.client).join(", ")}</div>`);
+  if(overdueTasks.length) strips.push(`<div class="alerts-strip" style="background:#FFF3E0;border-color:#EF9F27;color:#854F0B">📅 Tareas vencidas: ${[...new Set(overdueTasks.map(t=>t.deal.client))].join(", ")}</div>`);
+  document.getElementById("alertsStrip").innerHTML=strips.join("");
+}
+
+function renderKanban(){
+  const list=filtered();
+  document.getElementById("kanbanView").innerHTML=STAGES.map(st=>{
+    const cards=list.filter(d=>d.stage===st);
+    const stVal=cards.reduce((a,d)=>a+d.value,0);
+    const stUtil=cards.reduce((a,d)=>a+getUtility(d),0);
+    return`<div class="col" ondragover="event.preventDefault()" ondrop="dropCard('${st}')">
+      <div class="col-head"><span style="color:${STAGE_COLORS[st]}">${st}</span><span class="col-sub">${cards.length} · $${fmt(stVal)}</span></div>
+      ${cards.length?`<div style="font-size:11px;color:#3B6D11;background:#EAF3DE;border-radius:5px;padding:2px 7px;margin-bottom:7px;text-align:center">Util: $${fmt(stUtil)}</div>`:""}
+      ${cards.map(d=>{
+        const risk=getRisk(d),score=calcScore(d),days=daysSince(d.lastContact),m=getMargin(d),u=getUtility(d);
+        const sc=score>70?"#639922":score>40?"#EF9F27":"#D85A30";
+        return`<div class="card" style="border-left-color:${RISK_COLOR[risk]}" draggable="true" ondragstart="dragCard(${d.id})" onclick="openAI(${d.id})">
+          <div class="card-client">${d.client}</div>
+          <div class="card-sub">${d.contact} · ${d.product}</div>
+          <div class="card-row"><span style="font-size:13px;font-weight:700">${fmtFull(d.value)}</span><span class="badge" style="background:${RISK_BG[risk]};color:${RISK_COLOR[risk]}">${risk}</span></div>
+          <div class="card-margin"><span style="font-size:11px;color:#3B6D11;font-weight:600">Util: ${fmtFull(u)}</span><span style="font-size:11px;color:#639922;font-weight:700">${m}%</span></div>
+          <div class="card-meta"><span>Score: ${score}</span><span style="color:${days>=7?"#D85A30":"#aaa"}">${days}d</span></div>
+          <div class="prog-wrap"><div class="prog-bar" style="width:${score}%;background:${sc}"></div></div>
+        </div>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+}
+
+function renderList(){
+  const list=filtered();
+  document.getElementById("listView").innerHTML=`<table>
+    <thead><tr>${["Cliente","Contacto","Etapa","Valor","Margen%","Utilidad","Producto","Prob%","Score","Riesgo","Días",""].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+    <tbody>${list.map(d=>{
+      const risk=getRisk(d),score=calcScore(d),days=daysSince(d.lastContact),m=getMargin(d),u=getUtility(d);
+      return`<tr onclick="openAI(${d.id})" style="cursor:pointer">
+        <td><strong>${d.client}</strong></td><td style="color:#888">${d.contact}</td>
+        <td><span class="badge" style="background:${STAGE_COLORS[d.stage]}22;color:${STAGE_COLORS[d.stage]}">${d.stage}</span></td>
+        <td>${fmtFull(d.value)}</td><td style="color:#3B6D11;font-weight:700">${m}%</td>
+        <td style="color:#3B6D11;font-weight:700">${fmtFull(u)}</td><td style="color:#888">${d.product}</td>
+        <td>${d.prob}%</td><td>${score}</td>
+        <td><span class="badge" style="background:${RISK_BG[risk]};color:${RISK_COLOR[risk]}">${risk}</span></td>
+        <td style="color:${days>=7?"#D85A30":"#aaa"}">${days}d</td>
+        <td onclick="event.stopPropagation()"><button class="btn-del" onclick="deleteDeal(${d.id})">Eliminar</button></td>
+      </tr>`;
+    }).join("")}</tbody>
+  </table>`;
+}
+
+// ── DRAG & DROP ───────────────────────────────────────────────
+let dragId=null;
+function dragCard(id){dragId=id;}
+function dropCard(stage){if(dragId!=null){deals=deals.map(d=>d.id===dragId?{...d,stage}:d);dragId=null;saveAll();render();}}
+
+// ── VISTAS ────────────────────────────────────────────────────
+function setView(v){
+  currentView=v;
+  document.getElementById("kanbanView").classList.toggle("hidden",v!=="kanban");
+  document.getElementById("listView").classList.toggle("hidden",v!=="list");
+  document.getElementById("tabKanban").classList.toggle("active",v==="kanban");
+  document.getElementById("tabList").classList.toggle("active",v==="list");
+  render();
+}
+function toggleView(){setView(currentView==="kanban"?"list":"kanban");}
+
+// ── NUEVA OPORTUNIDAD ─────────────────────────────────────────
+function openAdd(){
+  document.getElementById("f_lastContact").value=new Date().toISOString().split("T")[0];
+  document.getElementById("f_prob").value=30;
+  document.getElementById("f_margin").value=productMargins["Redes"]||30;
+  document.getElementById("f_util_preview").textContent="$0";
+  document.getElementById("addOverlay").classList.remove("hidden");
+}
+function closeAdd(){document.getElementById("addOverlay").classList.add("hidden");}
+function autoFillMargin(){const p=document.getElementById("f_product").value;document.getElementById("f_margin").value=productMargins[p]||30;updateAddPreview();}
+function updateAddPreview(){const v=parseFloat(document.getElementById("f_value").value)||0,m=parseFloat(document.getElementById("f_margin").value)||0;document.getElementById("f_util_preview").textContent=fmtFull(Math.round(v*m/100));}
+function saveDeal(){
+  const client=document.getElementById("f_client").value.trim();
+  if(!client){alert("El nombre del cliente es requerido.");return;}
+  deals.push({id:nextId++,client,contact:document.getElementById("f_contact").value,stage:document.getElementById("f_stage").value,value:parseFloat(document.getElementById("f_value").value)||0,industry:document.getElementById("f_industry").value,size:document.getElementById("f_size").value,product:document.getElementById("f_product").value,prob:parseInt(document.getElementById("f_prob").value)||30,lastContact:document.getElementById("f_lastContact").value,nextAction:document.getElementById("f_nextAction").value,margin:parseFloat(document.getElementById("f_margin").value)||null,tasks:[],taskDone:false,taskDueDate:""});
+  closeAdd();
+  ["f_client","f_contact","f_value","f_nextAction"].forEach(id=>document.getElementById(id).value="");
+  saveAll();render();
+}
+function deleteDeal(id){if(confirm("¿Eliminar esta oportunidad?")){deals=deals.filter(d=>d.id!==id);saveAll();render();}}
+
+// ── AI MODAL ──────────────────────────────────────────────────
+async function openAI(id){
+  selectedId=id;
+  const d=deals.find(x=>x.id===id);
+  const rec=getRec(d),score=calcScore(d),days=daysSince(d.lastContact),m=getMargin(d),u=getUtility(d);
+  document.getElementById("aiTitle").textContent=d.client+" — Análisis";
+  document.getElementById("aiSubtitle").textContent=d.product+" · "+d.industry;
+  document.getElementById("aiMetrics").innerHTML=[["Etapa",d.stage],["Valor",fmtFull(d.value)],["Score",score+"/100"],["Riesgo",getRisk(d)],["Días sin act.",days+"d"],["Prob.",d.prob+"%"]].map(([k,v])=>`<div class="ai-metric"><div class="ai-metric-label">${k}</div><div class="ai-metric-val">${v}</div></div>`).join("");
+  document.getElementById("marginHighlight").innerHTML=`<div class="margin-row"><div><div class="margin-label">Utilidad estimada</div><div class="margin-big">${fmtFull(u)}</div></div><div style="text-align:center"><div class="margin-label">Margen</div><div class="margin-big">${m}%</div></div><div style="text-align:right"><div class="margin-label">Utilidad ponderada</div><div class="margin-big" style="font-size:15px">${fmtFull(Math.round(u*d.prob/100))}</div></div></div>`;
+  document.getElementById("aiBaseRec").innerHTML=`<div class="rec-box rec-blue">Acción: <strong>${rec.suggested}</strong> — ${rec.action}</div>${rec.alerts.map(a=>`<div class="rec-box rec-red">Alerta: ${a}</div>`).join("")}`;
+  document.getElementById("edit_client").value=d.client;document.getElementById("edit_contact").value=d.contact;
+  document.getElementById("edit_stage").value=d.stage;document.getElementById("edit_value").value=d.value;
+  document.getElementById("edit_industry").value=d.industry;document.getElementById("edit_size").value=d.size;
+  document.getElementById("edit_product").value=d.product;document.getElementById("edit_prob").value=d.prob;
+  document.getElementById("edit_margin").value=m;document.getElementById("edit_lastContact").value=d.lastContact;
+  document.getElementById("edit_next").value=d.nextAction||"";
+  updateEditPreview();
+  document.getElementById("aiContent").innerHTML=`<div class="ai-loading">Analizando oportunidad...</div>`;
+  document.getElementById("aiOverlay").classList.remove("hidden");
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`Eres asesor comercial B2B en ciberseguridad. Analiza en español (conciso, máx 5 oraciones):\nCliente: ${d.client} | Industria: ${d.industry} | Tamaño: ${d.size}\nEtapa: ${d.stage} | Valor: $${d.value} | Margen: ${m}% | Utilidad: $${u} | Prob: ${d.prob}%\nDías sin actividad: ${days} | Riesgo: ${rec.risk}\nDa: 1) Próximo paso específico 2) Estrategia de cierre 3) Cómo defender el margen ante objeciones.`}]})});
+    const data=await resp.json();
+    document.getElementById("aiContent").innerHTML=`<div class="ai-text">${data.content[0].text}</div>`;
+  }catch(e){document.getElementById("aiContent").innerHTML=`<div class="ai-text" style="color:#D85A30">Error al conectar con la IA.</div>`;}
+}
+function closeAI(){document.getElementById("aiOverlay").classList.add("hidden");selectedId=null;}
+function autoFillEditMargin(){const p=document.getElementById("edit_product").value;document.getElementById("edit_margin").value=productMargins[p]||30;updateEditPreview();}
+function updateEditPreview(){const v=parseFloat(document.getElementById("edit_value").value)||0,m=parseFloat(document.getElementById("edit_margin").value)||0;document.getElementById("edit_util_preview").textContent=fmtFull(Math.round(v*m/100));}
+function saveFullEdit(){
+  if(selectedId==null) return;
+  const mv=parseFloat(document.getElementById("edit_margin").value);
+  deals=deals.map(d=>d.id===selectedId?{...d,client:document.getElementById("edit_client").value||d.client,contact:document.getElementById("edit_contact").value,stage:document.getElementById("edit_stage").value,value:parseFloat(document.getElementById("edit_value").value)||0,industry:document.getElementById("edit_industry").value,size:document.getElementById("edit_size").value,product:document.getElementById("edit_product").value,prob:parseInt(document.getElementById("edit_prob").value)||0,margin:isNaN(mv)?null:mv,lastContact:document.getElementById("edit_lastContact").value,nextAction:document.getElementById("edit_next").value,tasks:d.tasks||[],taskDone:d.taskDone||false}:d);
+  const d=deals.find(x=>x.id===selectedId),m=getMargin(d),u=getUtility(d);
+  document.getElementById("marginHighlight").innerHTML=`<div class="margin-row"><div><div class="margin-label">Utilidad estimada</div><div class="margin-big">${fmtFull(u)}</div></div><div style="text-align:center"><div class="margin-label">Margen</div><div class="margin-big">${m}%</div></div><div style="text-align:right"><div class="margin-label">Utilidad ponderada</div><div class="margin-big" style="font-size:15px">${fmtFull(Math.round(u*d.prob/100))}</div></div></div>`;
+  saveAll();render();
+  const btn=document.querySelector("[onclick='saveFullEdit()']");
+  btn.textContent="✓ Guardado";btn.style.background="#639922";
+  setTimeout(()=>{btn.textContent="Guardar cambios";btn.style.background="#7F77DD";},1800);
+}
+
+// ── MÁRGENES ──────────────────────────────────────────────────
+function openMarginsModal(){renderProductsGrid();document.getElementById("marginsOverlay").classList.remove("hidden");}
+function renderProductsGrid(){
+  document.getElementById("productsGrid").innerHTML=PRODUCTS.map(p=>`<div class="product-row"><span class="product-name">${p}</span><input class="product-input" type="number" min="0" max="100" id="pm_${p.replace(/\s/g,'_')}" value="${productMargins[p]||30}"/> <span style="font-size:12px;color:#888">%</span></div>`).join("");
+}
+function saveMargins(){
+  PRODUCTS.forEach(p=>{const el=document.getElementById("pm_"+p.replace(/\s/g,"_"));if(el)productMargins[p]=parseFloat(el.value)||0;});
+  document.getElementById("marginsOverlay").classList.add("hidden");
+  saveAll();render();
+}
+
+// ── ZOHO ──────────────────────────────────────────────────────
+function connectZoho(){
+  const t=document.getElementById("zohoToken").value;
+  if(!t){alert("Ingresa un token de acceso.");return;}
+  document.getElementById("zohoStatusText").textContent="Conectando...";
+  setTimeout(()=>{document.getElementById("zohoStatusText").textContent="Conectado";document.getElementById("zohoModalDot").style.background="#639922";document.getElementById("zohoDot").style.background="#639922";},1500);
+}
+
+// ── EXCEL ─────────────────────────────────────────────────────
+function importExcel(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const wb=XLSX.read(ev.target.result,{type:"binary"});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws);
+    const map=(r,keys)=>{const k=keys.find(k=>r[k]!=null);return k?r[k]:"";}
+    const nd=rows.map((r,i)=>({id:nextId++,client:String(map(r,["Cliente","client","Company","Empresa"])||`Empresa ${i+1}`),contact:String(map(r,["Contacto","contact","Nombre del Contacto"])||""),stage:STAGES.includes(map(r,["Etapa","stage"]))?map(r,["Etapa","stage"]):"Prospección",value:parseFloat(map(r,["Valor","value","Monto"])||0)||0,industry:String(map(r,["Industria","industry"])||"Tecnología"),size:String(map(r,["Tamaño","size"])||"Mediana"),product:String(map(r,["Producto","product","Solución"])||"Ciberseguridad"),lastContact:String(map(r,["Último contacto","lastContact","Fecha"])||new Date().toISOString().split("T")[0]),nextAction:String(map(r,["Próxima acción","nextAction"])||""),prob:parseInt(map(r,["Probabilidad","prob"])||30)||30,margin:parseFloat(map(r,["Margen","margin","Margen%"]))||null}));
+    deals=[...deals,...nd];saveAll();render();alert(`${nd.length} oportunidades importadas.`);
+  };
+  reader.readAsBinaryString(file);e.target.value="";
+}
+
+// ── DASHBOARD EJECUTIVO ───────────────────────────────────────
+function openDashboard(){
+  document.getElementById("dashOverlay").classList.add("open");
+  document.body.style.overflow="hidden";
+  document.getElementById("reportDate").textContent="Generado el "+new Date().toLocaleDateString("es-GT",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  renderDashboard();
+}
+function closeDashboard(){document.getElementById("dashOverlay").classList.remove("open");document.body.style.overflow="";}
+
+function renderDashboard(){
+  const d=deals;
+  const total=d.reduce((a,x)=>a+x.value,0);
+  const totalUtil=d.reduce((a,x)=>a+getUtility(x),0);
+  const avgMargin=d.length?Math.round(d.reduce((a,x)=>a+getMargin(x),0)/d.length):0;
+  const avgScore=d.length?Math.round(d.reduce((a,x)=>a+calcScore(x),0)/d.length):0;
+  const crits=d.filter(x=>getRisk(x)==="Alto").length;
+  const forecast=d.filter(x=>x.stage==="Negociación"||x.stage==="Cierre");
+  const forecastVal=forecast.reduce((a,x)=>a+x.value,0);
+  const forecastUtil=forecast.reduce((a,x)=>a+getUtility(x),0);
+  const pond=Math.round(d.reduce((a,x)=>a+getUtility(x)*(x.prob/100),0));
+  const closed=d.filter(x=>x.stage==="Cierre");
+  const convRate=d.length?Math.round(closed.length/d.length*100):0;
+
+  // KPIs
+  document.getElementById("dash_kpis").innerHTML=[
+    ["Pipeline Total",fmtFull(total),"#7F77DD","Valor bruto de todas las oportunidades"],
+    ["Utilidad Total",fmtFull(totalUtil),"#3B6D11","Margen promedio "+avgMargin+"%"],
+    ["Forecast Activo",fmtFull(forecastVal),"#378ADD",forecast.length+" oportunidades en etapas finales"],
+    ["Utilidad Forecast",fmtFull(forecastUtil),"#1D9E75","Negociación + Cierre"],
+    ["Utilidad Ponderada",fmtFull(pond),"#BA7517","Ajustada por probabilidad real"],
+    ["Alertas Críticas",crits,"#D85A30","Score prom. "+avgScore+" / Conv. "+convRate+"%"],
+  ].map(([l,v,c,s])=>`<div class="kpi-card" style="border-top-color:${c}"><div class="kpi-label">${l}</div><div class="kpi-val" style="color:${c}">${v}</div><div class="kpi-sub">${s}</div></div>`).join("");
+
+  // Comparative bars
+  const maxV=Math.max(total,totalUtil,forecastVal,forecastUtil,pond)||1;
+  document.getElementById("dash_bars").innerHTML=[
+    ["Tamaño Total Pipeline",total,"#7F77DD"],
+    ["Utilidad Total",totalUtil,"#639922"],
+    ["Forecast (Neg+Cierre)",forecastVal,"#378ADD"],
+    ["Utilidad Forecast",forecastUtil,"#1D9E75"],
+    ["Utilidad Ponderada",pond,"#EF9F27"],
+  ].map(([l,v,c])=>`<div style="margin-bottom:9px">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span style="color:#555">${l}</span><span style="font-weight:700;color:${c}">${fmtFull(v)}</span></div>
+    <div style="background:#f0f2f5;border-radius:4px;height:20px;overflow:hidden">
+      <div style="width:${Math.round(v/maxV*100)}%;background:${c};height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px">
+        <span style="font-size:10px;color:#fff;font-weight:700">${Math.round(v/maxV*100)}%</span>
+      </div>
+    </div>
+  </div>`).join("");
+  document.getElementById("dash_conversion").innerHTML=`<div style="background:#f0f2f5;border-radius:6px;height:16px;overflow:hidden;margin-top:4px"><div style="width:${convRate}%;background:#7F77DD;height:100%;border-radius:6px;display:flex;align-items:center;padding-left:6px"><span style="font-size:10px;color:#fff;font-weight:700">${convRate}%</span></div></div>`;
+
+  // Top table
+  const sorted=[...d].sort((a,b)=>b.value-a.value).slice(0,8);
+  document.getElementById("dash_table").innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="background:#f8f8f6">${["#","Cliente","Etapa","Valor","Margen","Utilidad","Riesgo","Días"].map(h=>`<th style="padding:6px 9px;text-align:left;font-weight:600;color:#888;border-bottom:1px solid #eee;white-space:nowrap">${h}</th>`).join("")}</tr></thead>
+    <tbody>${sorted.map((x,i)=>{const risk=getRisk(x),m=getMargin(x),u=getUtility(x),days=daysSince(x.lastContact);
+      return`<tr style="border-bottom:1px solid #f5f5f3">
+        <td style="padding:6px 9px;color:#aaa;font-weight:600">${i+1}</td>
+        <td style="padding:6px 9px;font-weight:700">${x.client}</td>
+        <td style="padding:6px 9px"><span style="background:${STAGE_COLORS[x.stage]}22;color:${STAGE_COLORS[x.stage]};padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700">${x.stage}</span></td>
+        <td style="padding:6px 9px;font-weight:700">${fmtFull(x.value)}</td>
+        <td style="padding:6px 9px;color:#3B6D11;font-weight:700">${m}%</td>
+        <td style="padding:6px 9px;color:#3B6D11;font-weight:700">${fmtFull(u)}</td>
+        <td style="padding:6px 9px"><span style="background:${RISK_BG[risk]};color:${RISK_COLOR[risk]};padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700">${risk}</span></td>
+        <td style="padding:6px 9px;color:${days>=7?"#D85A30":"#aaa"}">${days}d</td>
+      </tr>`;}).join("")}</tbody>
+  </table>`;
+
+  // Alerts
+  const alerts=[...d].filter(x=>getRisk(x)!=="Bajo").sort((a,b)=>b.value-a.value);
+  document.getElementById("dash_alerts").innerHTML=alerts.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="background:#f8f8f6">${["Cliente","Etapa","Valor","Días","Riesgo","Acción recomendada"].map(h=>`<th style="padding:6px 9px;text-align:left;font-weight:600;color:#888;border-bottom:1px solid #eee">${h}</th>`).join("")}</tr></thead>
+    <tbody>${alerts.map(x=>{const risk=getRisk(x),days=daysSince(x.lastContact),rec=getRec(x);
+      return`<tr style="border-bottom:1px solid #f5f5f3">
+        <td style="padding:6px 9px;font-weight:700">${x.client}</td>
+        <td style="padding:6px 9px"><span style="background:${STAGE_COLORS[x.stage]}22;color:${STAGE_COLORS[x.stage]};padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700">${x.stage}</span></td>
+        <td style="padding:6px 9px;font-weight:700">${fmtFull(x.value)}</td>
+        <td style="padding:6px 9px;color:${days>=7?"#D85A30":"#BA7517"};font-weight:700">${days}d</td>
+        <td style="padding:6px 9px"><span style="background:${RISK_BG[risk]};color:${RISK_COLOR[risk]};padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700">${risk}</span></td>
+        <td style="padding:6px 9px;color:#555;font-size:11px">${rec.alerts[0]||rec.action}</td>
+      </tr>`;}).join("")}</tbody>
+  </table>`:"<div style='color:#888;font-size:13px;padding:8px 0'>No hay alertas activas.</div>";
+
+  // Recommendations board
+  const topByVal=[...d].sort((a,b)=>b.value-a.value)[0];
+  const topByRisk=d.filter(x=>getRisk(x)==="Alto").sort((a,b)=>b.value-a.value)[0];
+  const topByScore=[...d].sort((a,b)=>calcScore(b)-calcScore(a))[0];
+  const recomItems=[
+    {icon:"🏆",title:"Mayor oportunidad",color:"#7F77DD",bg:"#EEEDFE",body:topByVal?`${topByVal.client} — ${fmtFull(topByVal.value)} en etapa ${topByVal.stage}. Utilidad potencial: ${fmtFull(getUtility(topByVal))}. Acción: ${STAGE_ACTIONS[topByVal.stage]}.`:"Sin datos"},
+    {icon:"⚠️",title:"Prioridad urgente",color:"#D85A30",bg:"#FAECE7",body:topByRisk?`${topByRisk.client} lleva ${daysSince(topByRisk.lastContact)} días sin actividad con $${topByRisk.value.toLocaleString()} en juego. Requiere atención inmediata — ${getRec(topByRisk).suggested}.`:"Sin alertas críticas. Buen estado del pipeline."},
+    {icon:"⭐",title:"Mejor posicionada",color:"#3B6D11",bg:"#EAF3DE",body:topByScore?`${topByScore.client} — Score ${calcScore(topByScore)}/100 con ${topByScore.prob}% de probabilidad. Utilidad ponderada: ${fmtFull(Math.round(getUtility(topByScore)*topByScore.prob/100))}.`:"Sin datos"},
+    {icon:"📊",title:"Análisis de margen",color:"#BA7517",bg:"#FAEEDA",body:`Margen promedio del pipeline: ${avgMargin}%. Utilidad total si se cierran todas: ${fmtFull(totalUtil)}. Recomendación: proteger márgenes en etapa de negociación.`},
+    {icon:"🎯",title:"Forecast realista",color:"#378ADD",bg:"#E6F1FB",body:`Forecast ajustado por probabilidad: ${fmtFull(pond)}. Etapas avanzadas (Neg+Cierre): ${fmtFull(forecastVal)} con ${forecast.length} oportunidades. Tasa de conversión: ${convRate}%.`},
+    {icon:"📈",title:"Para la junta",color:"#1D9E75",bg:"#E1F5EE",body:`Presentar: pipeline de ${fmtFull(total)}, utilidad proyectada ${fmtFull(totalUtil)} (${avgMargin}% margen). Forecast conservador: ${fmtFull(pond)}. ${crits} oportunidad(es) requieren decisión ejecutiva.`},
+  ];
+  document.getElementById("dash_recommendations").innerHTML=recomItems.map(r=>`
+    <div style="border-radius:10px;padding:14px;background:${r.bg};border:1px solid ${r.color}33">
+      <div style="font-size:16px;margin-bottom:6px">${r.icon}</div>
+      <div style="font-size:12px;font-weight:700;color:${r.color};margin-bottom:6px">${r.title}</div>
+      <div style="font-size:12px;color:#444;line-height:1.6">${r.body}</div>
+    </div>`).join("");
+
+  // Funnel
+  const maxStage=Math.max(...STAGES.map(st=>d.filter(x=>x.stage===st).reduce((a,x)=>a+x.value,0)))||1;
+  document.getElementById("dash_funnel").innerHTML=`<div style="display:flex;gap:0;align-items:flex-end;height:120px;margin-top:8px">
+    ${STAGES.map(st=>{
+      const v=d.filter(x=>x.stage===st).reduce((a,x)=>a+x.value,0);
+      const h=Math.max(20,Math.round(v/maxStage*100));
+      const cnt=d.filter(x=>x.stage===st).length;
+      return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="font-size:10px;color:#888;font-weight:600">${fmtFull(v)}</div>
+        <div style="width:80%;height:${h}px;background:${STAGE_COLORS[st]};border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:11px;color:#fff;font-weight:700">${cnt}</span>
+        </div>
+        <div style="font-size:10px;color:#555;text-align:center;font-weight:600">${st}</div>
+      </div>`;
+    }).join("")}
+  </div>`;
+
+  loadCharts();
+}
+
+// ── CHARTS ────────────────────────────────────────────────────
+function loadCharts(){
+  if(window.Chart){buildCharts();}
+  else{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";s.onload=buildCharts;document.head.appendChild(s);}
+}
+function buildCharts(){
+  const d=deals;
+  const stV=STAGES.map(st=>d.filter(x=>x.stage===st).reduce((a,x)=>a+x.value,0));
+  const stU=STAGES.map(st=>d.filter(x=>x.stage===st).reduce((a,x)=>a+getUtility(x),0));
+  const stC=STAGES.map(st=>STAGE_COLORS[st]);
+  const inds=[...new Set(d.map(x=>x.industry))];
+  const indV=inds.map(i=>d.filter(x=>x.industry===i).reduce((a,x)=>a+x.value,0));
+  const iC=["#7F77DD","#378ADD","#1D9E75","#EF9F27","#D85A30","#639922","#BA7517","#993C1D"];
+  const def={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>" "+fmtFull(ctx.raw)}}}};
+  const scDef={x:{grid:{color:"#f0f0ec"},ticks:{callback:v=>"$"+(v/1000).toFixed(0)+"k"}},y:{grid:{color:"#f0f0ec"},ticks:{callback:v=>"$"+(v/1000).toFixed(0)+"k"}}};
+
+  const mk=(id,type,labels,data,colors,opts={})=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(el._chart)el._chart.destroy();
+    el._chart=new Chart(el,{type,data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,borderWidth:0}]},options:{...def,...opts}});
+  };
+  mk("ch_stages","bar",STAGES,stV,stC,{scales:{y:{ticks:{callback:v=>"$"+(v/1000).toFixed(0)+"k"},grid:{color:"#f0f0ec"}},x:{grid:{display:false}}}});
+  mk("ch_utility","bar",STAGES,stU,stC,{scales:{y:{ticks:{callback:v=>"$"+(v/1000).toFixed(0)+"k"},grid:{color:"#f0f0ec"}},x:{grid:{display:false}}}});
+  const el3=document.getElementById("ch_industry");
+  if(el3){if(el3._chart)el3._chart.destroy();el3._chart=new Chart(el3,{type:"doughnut",data:{labels:inds,datasets:[{data:indV,backgroundColor:iC.slice(0,inds.length),borderWidth:2,borderColor:"#fff"}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"right",labels:{boxWidth:10,font:{size:10}}},tooltip:{callbacks:{label:ctx=>" "+ctx.label+": "+fmtFull(ctx.raw)}}}}});}
+  const el4=document.getElementById("ch_scatter");
+  if(el4){if(el4._chart)el4._chart.destroy();el4._chart=new Chart(el4,{type:"bubble",data:{datasets:STAGES.map(st=>({label:st,data:d.filter(x=>x.stage===st).map(x=>({x:x.prob,y:calcScore(x),r:Math.max(5,Math.min(20,x.value/5000))})),backgroundColor:STAGE_COLORS[st]+"99"}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Prob: ${ctx.raw.x}% | Score: ${ctx.raw.y}`}}},scales:{x:{title:{display:true,text:"Probabilidad %",font:{size:11}},min:0,max:100,grid:{color:"#f0f0ec"}},y:{title:{display:true,text:"Score",font:{size:11}},min:0,max:100,grid:{color:"#f0f0ec"}}}}});}
+  const prods=[...new Set(d.map(x=>x.product))];
+  const prodV=prods.map(p=>d.filter(x=>x.product===p).reduce((a,x)=>a+x.value,0));
+  const sortedP=prods.map((p,i)=>({p,v:prodV[i]})).sort((a,b)=>b.v-a.v);
+  const el5=document.getElementById("ch_products");
+  if(el5){if(el5._chart)el5._chart.destroy();el5._chart=new Chart(el5,{type:"bar",data:{labels:sortedP.map(x=>x.p),datasets:[{data:sortedP.map(x=>x.v),backgroundColor:"#7F77DD99",borderRadius:5,borderWidth:0}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>" "+fmtFull(ctx.raw)}}},scales:{x:{ticks:{callback:v=>"$"+(v/1000).toFixed(0)+"k"},grid:{color:"#f0f0ec"}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});}
+  const sortedM=[...d].sort((a,b)=>b.value-a.value).slice(0,10);
+  const el6=document.getElementById("ch_margins");
+  if(el6){if(el6._chart)el6._chart.destroy();el6._chart=new Chart(el6,{type:"bar",data:{labels:sortedM.map(x=>x.client.split(" ")[0]),datasets:[{label:"Margen %",data:sortedM.map(x=>getMargin(x)),backgroundColor:sortedM.map(x=>getMargin(x)>=35?"#639922aa":"#EF9F27aa"),borderRadius:5,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw}% margen`}}},scales:{y:{max:60,ticks:{callback:v=>v+"%"},grid:{color:"#f0f0ec"}},x:{grid:{display:false}}}}});}
+}
+
+// ── AI REPORT ─────────────────────────────────────────────────
+async function generateAIReport(){
+  const banner=document.getElementById("dash_ai_banner");
+  banner.style.display="block";
+  document.getElementById("dash_ai_text").innerHTML=`<span style="color:#aaa">Generando análisis ejecutivo para junta directiva...</span>`;
+  const total=deals.reduce((a,d)=>a+d.value,0);
+  const totalUtil=deals.reduce((a,d)=>a+getUtility(d),0);
+  const avgMargin=deals.length?Math.round(deals.reduce((a,d)=>a+getMargin(d),0)/deals.length):0;
+  const crits=deals.filter(d=>getRisk(d)==="Alto").length;
+  const pond=Math.round(deals.reduce((a,d)=>a+getUtility(d)*(d.prob/100),0));
+  const forecast=deals.filter(d=>d.stage==="Negociación"||d.stage==="Cierre");
+  const summary=deals.map(d=>`- ${d.client} | ${d.stage} | $${d.value} | Margen: ${getMargin(d)}% | Util: $${getUtility(d)} | Prob: ${d.prob}% | Riesgo: ${getRisk(d)} | Días: ${daysSince(d.lastContact)}`).join("\n");
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content:`Eres director comercial B2B en ciberseguridad y tecnología. Genera un informe ejecutivo en español estructurado para presentar ante JUNTA DIRECTIVA. Incluye:\n\n1. RESUMEN EJECUTIVO (3-4 oraciones impactantes)\n2. ESTADO FINANCIERO DEL PIPELINE (análisis de valor, utilidad, márgenes)\n3. OPORTUNIDADES PRIORITARIAS (top 3 con justificación)\n4. RIESGOS CRÍTICOS Y PLAN DE MITIGACIÓN\n5. RECOMENDACIONES ESTRATÉGICAS PARA LA JUNTA (decisiones que necesitan respaldo ejecutivo)\n6. PROYECCIÓN Y PRÓXIMOS 30 DÍAS\n\nUSA LENGUAJE EJECUTIVO. Sé específico con los números. Resalta lo que requiere decisión de la junta.\n\nDATOS:\nPipeline: $${total.toLocaleString()} | Utilidad total: $${totalUtil.toLocaleString()} | Margen prom: ${avgMargin}% | Forecast: $${forecast.reduce((a,d)=>a+d.value,0).toLocaleString()} | Utilidad ponderada: $${pond.toLocaleString()} | Oportunidades: ${deals.length} | Alertas críticas: ${crits}\n\n${summary}`}]})});
+    const data=await resp.json();
+    reportCache=data.content[0].text;
+    document.getElementById("dash_ai_text").textContent=reportCache;
+  }catch(e){document.getElementById("dash_ai_text").innerHTML=`<span style="color:#D85A30">Error al generar el análisis IA.</span>`;}
+}
+function downloadReport(){if(!reportCache){alert("Primero genera el análisis IA.");return;}const b=new Blob([reportCache],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="informe_ejecutivo_pipeline.txt";a.click();}
+
+// ── DARK MODE ─────────────────────────────────────────────────
+let isDark=false;
+function toggleTheme(){
+  isDark=!isDark;
+  document.body.classList.toggle("dark",isDark);
+  document.getElementById("themeLabel").textContent=isDark?"Modo claro":"Modo oscuro";
+  localStorage.setItem("crm_theme",isDark?"dark":"light");
+}
+function loadTheme(){
+  const t=localStorage.getItem("crm_theme");
+  if(t==="dark"){isDark=true;document.body.classList.add("dark");document.getElementById("themeLabel").textContent="Modo claro";}
+}
+
+// ── EXPORTAR EXCEL ────────────────────────────────────────────
+function exportExcel(){
+  if(typeof XLSX==="undefined"){alert("Librería XLSX no cargada. Recarga la página.");return;}
+  try{
+    const wb=XLSX.utils.book_new();
+    // Sheet 1: Pipeline
+    const headers=["ID","Cliente","Contacto","Etapa","Valor ($)","Margen %","Utilidad ($)","Producto","Industria","Tamaño","Prob. %","Último contacto","Próxima acción","Riesgo","Score","Días sin actividad","Prioridad"];
+    const rows=deals.map(d=>[d.id,d.client,d.contact,d.stage,d.value,getMargin(d),getUtility(d),d.product,d.industry,d.size,d.prob,d.lastContact,d.nextAction||"",getRisk(d),calcScore(d),daysSince(d.lastContact),calcTaskPriority(d,null)]);
+    const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+    ws["!cols"]=[{wch:6},{wch:22},{wch:18},{wch:14},{wch:12},{wch:10},{wch:12},{wch:18},{wch:14},{wch:10},{wch:8},{wch:15},{wch:30},{wch:8},{wch:7},{wch:16},{wch:10}];
+    XLSX.utils.book_append_sheet(wb,"Pipeline",ws);
+    // Sheet 2: Tasks standalone
+    const allTasks=deals.flatMap(d=>(d.tasks||[]).map(t=>({deal:d,task:t})));
+    const fromNextAction=deals.filter(d=>d.nextAction&&d.nextAction.trim()).map(d=>({deal:d,task:{id:'na_'+d.id,desc:d.nextAction,priority:calcTaskPriority(d,null),dueDate:d.taskDueDate||"",done:d.taskDone||false,notes:""}}));
+    const allCombined=[...fromNextAction,...allTasks];
+    const tHeaders=["Cliente","Etapa","Tarea / Acción","Prioridad","Fecha límite","Días restantes","Vencida","Estado","Notas"];
+    const tRows=allCombined.map(({deal:d,task:t})=>{
+      const due=daysUntilDue(t);
+      const overdue=isTaskOverdue(t);
+      return[d.client,d.stage,t.desc,t.priority||calcTaskPriority(d,t),t.dueDate||"",due!==null?due:"",overdue?"SÍ":"No",t.done?"✓ Completada":"⏳ Pendiente",t.notes||""];
+    });
+    const wsT=XLSX.utils.aoa_to_sheet([tHeaders,...tRows]);
+    wsT["!cols"]=[{wch:20},{wch:14},{wch:32},{wch:10},{wch:14},{wch:14},{wch:8},{wch:14},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,"Tareas Pendientes",wsT);
+    XLSX.writeFile(wb,"pipeline_crm_"+new Date().toISOString().split("T")[0]+".xlsx");
+  }catch(e){console.error(e);alert("Error al exportar: "+e.message);}
+}
+// ── EXPORTAR WORD ─────────────────────────────────────────────
+function exportWord(){
+  const today=new Date().toLocaleDateString("es-GT",{year:"numeric",month:"long",day:"numeric"});
+  const total=deals.reduce((a,d)=>a+d.value,0);
+  const totalUtil=deals.reduce((a,d)=>a+getUtility(d),0);
+  const avgMargin=deals.length?Math.round(deals.reduce((a,d)=>a+getMargin(d),0)/deals.length):0;
+  const pond=Math.round(deals.reduce((a,d)=>a+getUtility(d)*(d.prob/100),0));
+  const crits=deals.filter(d=>getRisk(d)==="Alto").length;
+
+  const tableRows=deals.map(d=>`
+    <tr>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.client}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.contact}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.stage}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd;text-align:right">$${d.value.toLocaleString()}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd;text-align:right">${getMargin(d)}%</td>
+      <td style="padding:6px 10px;border:1px solid #ddd;text-align:right">$${getUtility(d).toLocaleString()}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.prob}%</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.product}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd;color:${getRisk(d)==='Alto'?'#D85A30':getRisk(d)==='Medio'?'#BA7517':'#639922'}">${getRisk(d)}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.nextAction||"-"}</td>
+    </tr>`).join("");
+
+  const taskRows=deals.filter(d=>d.nextAction).map(d=>`
+    <tr>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.client}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.nextAction}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${d.stage}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd;color:${getRisk(d)==='Alto'?'#D85A30':getRisk(d)==='Medio'?'#BA7517':'#639922'}">${getRisk(d)}</td>
+      <td style="padding:6px 10px;border:1px solid #ddd">${daysSince(d.lastContact)}d</td>
+      <td style="padding:6px 10px;border:1px solid #ddd;color:${d.taskDone?'#639922':'#D85A30'}">${d.taskDone?'✓ Completada':'⏳ Pendiente'}</td>
+    </tr>`).join("");
+
+  const html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset='UTF-8'><title>Pipeline CRM B2B</title>
+  <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
+  <style>
+    body{font-family:Calibri,sans-serif;font-size:11pt;color:#1a1a18}
+    h1{font-size:18pt;color:#7F77DD;margin-bottom:4pt}
+    h2{font-size:13pt;color:#333;margin-top:16pt;margin-bottom:6pt;border-bottom:1px solid #ddd;padding-bottom:4pt}
+    table{border-collapse:collapse;width:100%;margin-bottom:16pt;font-size:9pt}
+    th{background:#7F77DD;color:#fff;padding:6px 10px;border:1px solid #5a53bb;text-align:left}
+    .kpi-box{display:inline-block;background:#f5f5f3;border-radius:6px;padding:8px 16px;margin:4px;text-align:center}
+    .kpi-val{font-size:16pt;font-weight:bold;color:#7F77DD}
+    .kpi-label{font-size:9pt;color:#888}
+  </style></head>
+  <body>
+  <h1>Pipeline Comercial B2B — Informe</h1>
+  <p style="color:#888;font-size:10pt;margin-bottom:16pt">Generado el ${today} · ${deals.length} oportunidades activas</p>
+
+  <h2>Resumen Ejecutivo</h2>
+  <table style="width:auto;border:none">
+    <tr>
+      <td style="padding:8px 20px;border:1px solid #e8e8e4;text-align:center"><div class="kpi-val">$${total.toLocaleString()}</div><div class="kpi-label">Pipeline Total</div></td>
+      <td style="padding:8px 20px;border:1px solid #e8e8e4;text-align:center"><div class="kpi-val" style="color:#3B6D11">$${totalUtil.toLocaleString()}</div><div class="kpi-label">Utilidad Total (${avgMargin}%)</div></td>
+      <td style="padding:8px 20px;border:1px solid #e8e8e4;text-align:center"><div class="kpi-val" style="color:#BA7517">$${pond.toLocaleString()}</div><div class="kpi-label">Util. Ponderada</div></td>
+      <td style="padding:8px 20px;border:1px solid #e8e8e4;text-align:center"><div class="kpi-val" style="color:#D85A30">${crits}</div><div class="kpi-label">Alertas Críticas</div></td>
+    </tr>
+  </table>
+
+  <h2>Oportunidades del Pipeline</h2>
+  <table>
+    <thead><tr><th>Cliente</th><th>Contacto</th><th>Etapa</th><th>Valor</th><th>Margen</th><th>Utilidad</th><th>Prob.</th><th>Producto</th><th>Riesgo</th><th>Próxima Acción</th></tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+
+  <h2>Plan de Acciones y Seguimiento</h2>
+  <table>
+    <thead><tr><th>Cliente</th><th>Acción Pendiente</th><th>Etapa</th><th>Riesgo</th><th>Días sin actividad</th><th>Estado</th></tr></thead>
+    <tbody>${taskRows}</tbody>
+  </table>
+  </body></html>`;
+
+  const blob=new Blob(['\ufeff'+html],{type:"application/msword"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="pipeline_crm_"+new Date().toISOString().split("T")[0]+".doc";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── TASKS SYSTEM ─────────────────────────────────────────────
+// tasks are stored both as d.nextAction (legacy) and d.tasks[] (new standalone tasks)
+let taskFilter="all";
+let tasksPanelOpen=true;
+let editingTaskId=null; // {dealId, taskId}
+
+function setTaskFilter(f,btn){
+  taskFilter=f;
+  document.querySelectorAll(".tasks-filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderTasks();
+}
+
+function toggleTasksPanel(){
+  tasksPanelOpen=!tasksPanelOpen;
+  const body=document.getElementById("tasksBody");
+  const btn=document.querySelector(".tasks-panel-toggle");
+  body.style.display=tasksPanelOpen?"block":"none";
+  btn.textContent=tasksPanelOpen?"▾ Colapsar":"▸ Expandir";
+}
+
+// Build unified task list from all sources
+function getAllTasks(){
+  const result=[];
+  deals.forEach(d=>{
+    // Legacy nextAction as task
+    if(d.nextAction&&d.nextAction.trim()){
+      result.push({
+        dealId:d.id, deal:d, taskId:"na_"+d.id,
+        desc:d.nextAction, priority:calcTaskPriority(d,null),
+        dueDate:d.taskDueDate||"", done:d.taskDone||false, notes:"",
+        isLegacy:true
+      });
+    }
+    // Standalone tasks
+    (d.tasks||[]).forEach(t=>{
+      result.push({dealId:d.id, deal:d, taskId:t.id, desc:t.desc,
+        priority:t.priority||calcTaskPriority(d,t), dueDate:t.dueDate||"",
+        done:t.done||false, notes:t.notes||"", isLegacy:false});
+    });
+  });
+  return result;
+}
+
+function toggleIndividualTaskDone(dealId, taskId, isLegacy){
+  deals=deals.map(d=>{
+    if(d.id!==dealId) return d;
+    if(isLegacy){
+      return{...d, taskDone:!d.taskDone, lastContact:!d.taskDone?new Date().toISOString().split("T")[0]:d.lastContact};
+    } else {
+      return{...d, tasks:(d.tasks||[]).map(t=>t.id===taskId?{...t,done:!t.done}:t)};
+    }
+  });
+  saveAll();
+  renderTasks();
+  renderMetrics();
+  renderAlerts();
+  if(currentView==="kanban") renderKanban(); else renderList();
+}
+
+// Backward compat alias
+function toggleTaskDone(id){toggleIndividualTaskDone(id,"na_"+id,true);}
+
+function openAddTask(prefillDealId){
+  editingTaskId=null;
+  document.getElementById("taskModalTitle").textContent="Nueva Tarea";
+  document.getElementById("taskModalSub").textContent="Asociar a una oportunidad";
+  // Fill deal selector
+  const sel=document.getElementById("task_deal");
+  sel.innerHTML=deals.map(d=>`<option value="${d.id}"${d.id===prefillDealId?" selected":""}>${d.client} (${d.stage})</option>`).join("");
+  document.getElementById("task_desc").value="";
+  document.getElementById("task_prio").value="Media";
+  document.getElementById("task_due").value="";
+  document.getElementById("task_notes").value="";
+  document.getElementById("taskOverlay").classList.remove("hidden");
+}
+
+function closeTaskModal(){document.getElementById("taskOverlay").classList.add("hidden");editingTaskId=null;}
+
+function saveTask(){
+  const dealId=parseInt(document.getElementById("task_deal").value);
+  const desc=document.getElementById("task_desc").value.trim();
+  if(!desc){alert("La descripción es requerida.");return;}
+  const prio=document.getElementById("task_prio").value;
+  const due=document.getElementById("task_due").value;
+  const notes=document.getElementById("task_notes").value.trim();
+  const newTask={id:"t_"+Date.now(), desc, priority:prio, dueDate:due, done:false, notes};
+  deals=deals.map(d=>d.id===dealId?{...d,tasks:[...(d.tasks||[]),newTask]}:d);
+  saveAll();
+  closeTaskModal();
+  renderTasks();
+  renderMetrics();
+  if(currentView==="kanban") renderKanban(); else renderList();
+}
+
+function deleteStandaloneTask(dealId, taskId){
+  if(!confirm("¿Eliminar esta tarea?")) return;
+  deals=deals.map(d=>d.id===dealId?{...d,tasks:(d.tasks||[]).filter(t=>t.id!==taskId)}:d);
+  saveAll();
+  renderTasks();
+}
+
+function renderTasks(){
+  // Update deal filter dropdown
+  const sel=document.getElementById("taskDealFilter");
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML=`<option value="">Todas las oportunidades</option>`+deals.map(d=>`<option value="${d.id}"${d.id==cur?" selected":""}>${d.client}</option>`).join("");
+  }
+  const dealFilterVal=sel?parseInt(sel.value)||0:0;
+
+  let allTasks=getAllTasks();
+  if(dealFilterVal) allTasks=allTasks.filter(t=>t.dealId===dealFilterVal);
+
+  let filtered=allTasks;
+  if(taskFilter==="pending") filtered=allTasks.filter(t=>!t.done);
+  else if(taskFilter==="done") filtered=allTasks.filter(t=>t.done);
+  else if(taskFilter==="urgent") filtered=allTasks.filter(t=>!t.done&&(t.priority==="Alta"||getRisk(t.deal)==="Alto"));
+  else if(taskFilter==="overdue") filtered=allTasks.filter(t=>!t.done&&isTaskOverdue(t));
+
+  const pending=allTasks.filter(t=>!t.done).length;
+  const overdue=allTasks.filter(t=>!t.done&&isTaskOverdue(t)).length;
+  let badgeText=pending>0?`${pending} pendiente${pending!==1?"s":""}`:allTasks.length>0?"✓ al día":"";
+  if(overdue>0) badgeText+=` · ${overdue} vencida${overdue!==1?"s":""}`;
+  document.getElementById("tasksBadge").textContent=badgeText;
+  document.getElementById("tasksBadge").style.background=overdue>0?"#D85A30":pending>0?"#EF9F27":"#639922";
+
+  if(!filtered.length){
+    const msgs={done:"No hay actividades completadas aún.",urgent:"No hay tareas urgentes. ¡Excelente!",overdue:"No hay tareas vencidas. ¡Excelente!",pending:"No hay tareas pendientes.",all:"No hay acciones registradas. Usa '+ Nueva tarea' para agregar una."};
+    document.getElementById("tasksBody").innerHTML=`<div class="tasks-empty">${msgs[taskFilter]||msgs.all}</div>`;
+    return;
+  }
+
+  // Sort: overdue first, then priority, then risk, then days
+  const PRIO_W={Alta:3,Media:2,Baja:1};
+  filtered=[...filtered].sort((a,b)=>{
+    if(!a.done&&b.done) return -1;
+    if(a.done&&!b.done) return 1;
+    // Overdue first
+    const ao=isTaskOverdue(a)?1:0, bo=isTaskOverdue(b)?1:0;
+    if(ao!==bo) return bo-ao;
+    // Priority
+    const pa=PRIO_W[a.priority]||1, pb=PRIO_W[b.priority]||1;
+    if(pa!==pb) return pb-pa;
+    // Risk
+    const ra=getRisk(a.deal)==="Alto"?2:getRisk(a.deal)==="Medio"?1:0;
+    const rb=getRisk(b.deal)==="Alto"?2:getRisk(b.deal)==="Medio"?1:0;
+    return rb-ra;
+  });
+
+  const PRIO_CSS={Alta:"prio-alta",Media:"prio-media",Baja:"prio-baja"};
+  const PRIO_ICON={Alta:"🔴",Media:"🟡",Baja:"🟢"};
+
+  document.getElementById("tasksBody").innerHTML=filtered.map(t=>{
+    const {deal:d, done, priority, dueDate, desc, notes, dealId, taskId, isLegacy}=t;
+    const risk=getRisk(d);
+    const days=daysSince(d.lastContact);
+    const overdue=isTaskOverdue(t);
+    const dueSoon=isTaskDueSoon(t);
+    const daysLeft=daysUntilDue(t);
+    let rowClass="task-row"+(done?" done":"")+(overdue?" task-overdue":dueSoon?" task-due-soon":"");
+    let dueHtml="";
+    if(dueDate){
+      const dColor=overdue?"#D85A30":dueSoon?"#BA7517":"#639922";
+      const dText=overdue?`⚠ Vencida hace ${Math.abs(daysLeft)}d`:daysLeft===0?"⏰ Vence hoy":daysLeft>0?`📅 Vence en ${daysLeft}d`:"";
+      dueHtml=`<span class="due-badge" style="background:${dColor}18;color:${dColor}">${dText}</span>`;
+    }
+    return`<div class="${rowClass}">
+      <div class="task-checkbox ${done?"checked":""}" onclick="toggleIndividualTaskDone(${dealId},'${taskId}',${isLegacy})" title="${done?"Marcar pendiente":"Marcar completada"}"></div>
+      <span class="task-client" style="cursor:pointer" onclick="openAI(${dealId})">${d.client}</span>
+      <div style="flex:1;min-width:0">
+        <div class="task-action">${desc}</div>
+        ${notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${notes}</div>`:""}
+      </div>
+      <span class="badge ${PRIO_CSS[priority]||'prio-baja'}" style="padding:2px 8px;font-size:10px">${PRIO_ICON[priority]||"🟢"} ${priority||"Baja"}</span>
+      <span class="task-stage-badge" style="background:${STAGE_COLORS[d.stage]}22;color:${STAGE_COLORS[d.stage]}">${d.stage}</span>
+      ${dueHtml}
+      <span class="task-days" style="color:${days>=7?"#D85A30":days>=4?"#BA7517":"var(--text3)"}">${days}d act.</span>
+      <span style="font-size:11px;color:${done?"#639922":"#D85A30"};font-weight:600;white-space:nowrap">${done?"✓ Lista":"⏳ Pend."}</span>
+      ${!isLegacy?`<button onclick="deleteStandaloneTask(${dealId},'${taskId}')" style="padding:2px 6px;border-radius:5px;border:1px solid var(--border3);background:transparent;color:var(--text3);font-size:11px;cursor:pointer">✕</button>`:""}
+      <button class="btn-add-task" onclick="openAddTask(${dealId})">+ Tarea</button>
+    </div>`;
+  }).join("");
+}
+
+// Override render to also render tasks
+function render(){renderMetrics();renderAlerts();currentView==="kanban"?renderKanban():renderList();renderTasks();}
+
+// ── Init ──────────────────────────────────────────────────────
+document.getElementById("f_lastContact").value=new Date().toISOString().split("T")[0];
+document.getElementById("f_value").addEventListener("input",updateAddPreview);
+document.getElementById("f_margin").addEventListener("input",updateAddPreview);
+loadTheme();
+// Render con datos demo mientras carga la nube
+render();
+// Luego carga datos reales desde Google Sheets
+loadAll();
+// Auto-sync cada 60 segundos para ver cambios de otros usuarios
+setInterval(async()=>{
+  if(isSyncing) return;
+  isSyncing=true;
+  const cloud=await loadFromSheets();
+  if(cloud&&cloud.deals&&cloud.savedAt){
+    const localSaved=localStorage.getItem("crm_savedAt")||"";
+    if(cloud.savedAt>localSaved){
+      deals=cloud.deals;
+      nextId=cloud.nextId||nextId;
+      if(cloud.productMargins) productMargins={...productMargins,...cloud.productMargins};
+      localStorage.setItem("crm_savedAt",cloud.savedAt);
+      render();
+    }
+  }
+  isSyncing=false;
+},60000);
+</script>
+</body>
+</html>
