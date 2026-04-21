@@ -510,8 +510,10 @@ const RISK_BG={Bajo:"#EAF3DE",Medio:"#FAEEDA",Alto:"#FAECE7"};
 const STAGE_ACTIONS={Prospección:"Investigar cliente / primer contacto",Contacto:"Agendar reunión",Presentación:"Enviar demo",Propuesta:"Enviar cotización",Negociación:"Ajustar oferta",Cierre:"Confirmar contrato"};
 const PRODUCTS=["Redes","Ciberseguridad","NDR","MDR","EPDR","XDR","Firewall","EDR","Libraesva","Patch Management","Diagnóstico de seguridad","Educativo","Cloud","Office 365"];
 
-// ── PERSISTENCIA GOOGLE SHEETS ───────────────────────────────
-const GS_URL="https://script.google.com/macros/s/AKfycbz_DKd1fntgVbtI8Yn7QhqHlR_OxQNZSEL-7F3yLN81s9ZlTqEbnculTGAxYpr256nH2A/exec";
+// ── PERSISTENCIA JSONBIN.IO ───────────────────────────────────
+const JB_BIN_ID="69e700b9aaba8821971f1abe";
+const JB_KEY="$2a$10$fHeOydKC2VSuMLfJyY8wRuM6wrcjU/tfJ8Y0tFvD2GBg1juR1gdha";
+const JB_URL="https://api.jsonbin.io/v3/b/"+JB_BIN_ID;
 const STORAGE_KEY="crm_pipeline_v2";
 const MARGINS_KEY="crm_margins_v2";
 let saveTimeout=null;
@@ -533,66 +535,63 @@ function setSyncStatus(status){
   dot.style.background=c.dot; txt.textContent=c.text;
 }
 
-async function saveToSheets(payload){
+async function saveToCloud(payload){
   try{
     setSyncStatus("syncing");
-    const resp=await fetch(GS_URL,{method:"POST",body:JSON.stringify(payload),headers:{"Content-Type":"text/plain"}});
-    const text=await resp.text();
-    if(text==="OK"||text.includes("OK")){setSyncStatus("ok");}
-    else{setSyncStatus("error");console.warn("Sheets response:",text);}
+    const resp=await fetch(JB_URL,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","X-Master-Key":JB_KEY,"X-Bin-Versioning":"false"},
+      body:JSON.stringify(payload)
+    });
+    if(resp.ok){setSyncStatus("ok");}
+    else{setSyncStatus("error");console.warn("JSONBin save error:",resp.status);}
   }catch(e){
     setSyncStatus("error");
-    console.warn("Sheets save failed, using localStorage fallback:",e);
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
+    console.warn("Cloud save failed, using localStorage:",e);
   }
 }
 
-async function loadFromSheets(){
+async function loadFromCloud(){
   try{
     setSyncStatus("syncing");
-    const resp=await fetch(GS_URL+"?t="+Date.now());
-    const text=await resp.text();
-    if(!text||text==="[]"||text==="null"){setSyncStatus("ok");return null;}
-    const data=JSON.parse(text);
+    const resp=await fetch(JB_URL+"/latest",{
+      headers:{"X-Master-Key":JB_KEY,"X-Bin-Meta":"false"}
+    });
+    if(!resp.ok){setSyncStatus("error");return null;}
+    const data=await resp.json();
     setSyncStatus("ok");
     return data;
   }catch(e){
-    console.warn("Sheets load failed, using localStorage fallback:",e);
     setSyncStatus("offline");
-    const raw=localStorage.getItem(STORAGE_KEY);
-    return raw?JSON.parse(raw):null;
+    console.warn("Cloud load failed:",e);
+    return null;
   }
 }
 
 function saveAll(){
-  // Always save to localStorage as backup
   const payload={deals,nextId,productMargins,savedAt:new Date().toISOString()};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
   localStorage.setItem(MARGINS_KEY,JSON.stringify(productMargins));
-  // Debounce cloud save 1.2s to avoid too many requests
   clearTimeout(saveTimeout);
-  saveTimeout=setTimeout(()=>saveToSheets(payload),1200);
+  saveTimeout=setTimeout(()=>saveToCloud(payload),1200);
 }
 
 async function loadAll(){
-  // First load from localStorage immediately for fast render
+  // Load localStorage first for instant render
   try{
     const raw=localStorage.getItem(STORAGE_KEY);
     if(raw){
       const p=JSON.parse(raw);
-      if(p.deals){deals=p.deals;nextId=p.nextId||nextId;}
+      if(p.deals&&p.deals.length>0){deals=p.deals;nextId=p.nextId||nextId;}
       if(p.productMargins) productMargins={...productMargins,...p.productMargins};
     }
-    const mr=localStorage.getItem(MARGINS_KEY);
-    if(mr) productMargins={...productMargins,...JSON.parse(mr)};
   }catch(e){}
-  // Then try to load fresh data from Google Sheets
-  const cloud=await loadFromSheets();
-  if(cloud&&cloud.deals){
-    // Use cloud data if it's newer
+  // Load from cloud
+  const cloud=await loadFromCloud();
+  if(cloud&&cloud.deals&&cloud.deals.length>0){
     const localSaved=localStorage.getItem("crm_savedAt")||"";
     const cloudSaved=cloud.savedAt||"";
-    if(!localSaved||cloudSaved>localSaved){
+    if(!localSaved||cloudSaved>=localSaved){
       deals=cloud.deals;
       nextId=cloud.nextId||nextId;
       if(cloud.productMargins) productMargins={...productMargins,...cloud.productMargins};
@@ -1369,7 +1368,7 @@ loadAll();
 setInterval(async()=>{
   if(isSyncing) return;
   isSyncing=true;
-  const cloud=await loadFromSheets();
+  const cloud=await loadFromCloud();
   if(cloud&&cloud.deals&&cloud.savedAt){
     const localSaved=localStorage.getItem("crm_savedAt")||"";
     if(cloud.savedAt>localSaved){
